@@ -1,24 +1,22 @@
 from flask import Blueprint, request, jsonify
-import hashlib
+from flask_jwt_extended import create_access_token
+from werkzeug.security import check_password_hash
+from mongo_config import users_collection
 
 auth_routes_bp = Blueprint('auth_routes', __name__)
-
-# fake data
-users = {
-    "admin": hashlib.sha256("password123".encode()).hexdigest()
-}
 
 @auth_routes_bp.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
-    email = data.get('email')
+    username = data.get('username')
     password = data.get('password')
 
-    if not email or not password:
-        return jsonify({'error': 'Email and password required'}), 400
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
 
-    hashed_pw = hashlib.sha256(password.encode()).hexdigest()
-    if users.get(email) == hashed_pw:
-        return jsonify({'message': 'Login successful', 'token': 'fake-jwt-token'}), 200
+    user = users_collection.find_one({'username': username})
+    if user and check_password_hash(user['password'], password):
+        token = create_access_token(identity=username)
+        return jsonify({'message': 'Login successful', 'token': token}), 200
     else:
-        return jsonify({'error': 'Invalid email or password'}), 401
+        return jsonify({'error': 'Invalid credentials'}), 401

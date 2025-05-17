@@ -1,26 +1,27 @@
-from flask import Flask, request
+from flask import Flask
+from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+from dotenv import load_dotenv
+import os
+
+from routes.auth_routes import auth_routes_bp
 from routes.data_entry import data_entry_bp
 from routes.dashboard import dashboard_bp
-from routes.auth_routes import auth_routes_bp
-from auth import require_auth
-from flask_cors import CORS
+
+load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app,supports_credentials=True)
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+jwt = JWTManager(app)
 
-@app.route('/')
-def home():#
-    return "Backend server is running"#
-
-@app.before_request
-def check_auth():
-    if request.path != '/api/login':
-        require_auth()
-
-# Register blueprints
+app.register_blueprint(auth_routes_bp)
 app.register_blueprint(data_entry_bp, url_prefix='/api/form')
 app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
-app.register_blueprint(auth_routes_bp)
+
+@app.route('/')
+def home():
+    return "Backend server running"
 
 if __name__ == '__main__':
     app.run(debug=True)
