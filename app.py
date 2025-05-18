@@ -23,6 +23,10 @@ app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
 def home():
     return "Backend server running"
 
+@app.route('/health')
+def health():
+    return 'OK', 200
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)
