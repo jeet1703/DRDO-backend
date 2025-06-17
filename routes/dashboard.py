@@ -23,9 +23,17 @@ def get_records(site):
             record['_id'] = str(record['_id'])
             record['id'] = idx + 1
             # Ensure all required fields exist
-            record.setdefault('referenceNo', record['_id'])  # Use _id as referenceNo if not set
+            record.setdefault('referenceNo', record['_id'])
             record.setdefault('comments', '')
             record.setdefault('status', 'In Process')
+            
+            # Add createdAt if it doesn't exist (using _id generation time as fallback)
+            if 'createdAt' not in record:
+                try:
+                    record['createdAt'] = ObjectId(record['_id']).generation_time.isoformat()
+                except:
+                    record['createdAt'] = datetime.now().isoformat()
+            
             # Set defaults for other fields as needed
             for field in ['nomenclature', 'institute', 'domainExpert', 'recommendation',
                         'researchVertical', 'cost', 'dateOfSanction', 'durationPDC',
@@ -151,7 +159,6 @@ def delete_record(site, reference_no):
         return jsonify({"error": "Invalid site specified"}), 404
     
     try:
-        # Try to delete by _id first
         try:
             obj_id = ObjectId(reference_no)
             result = records_collection.delete_one({'_id': obj_id})
