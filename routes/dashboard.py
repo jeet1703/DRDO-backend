@@ -35,11 +35,11 @@ def get_records(site):
                     record['createdAt'] = datetime.now().isoformat()
             
             # Set defaults for other fields as needed
-            for field in ['nomenclature', 'institute', 'domainExpert', 'recommendation',
-                        'researchVertical', 'cost', 'dateOfSanction', 'durationPDC',
-                        'stakeHolderLab']:
+            for field in ['projectTitle', 'nomenclature', 'institute', 'domainExpert', 'recommendation',
+              'researchVertical', 'cost', 'dateOfSanction', 'durationPDC',
+              'stakeHolderLab', 'referenceNo']:
                 record.setdefault(field, '')
-        
+        # Return records with sequential ids and default fields
         return jsonify(records)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
